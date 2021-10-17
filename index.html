@@ -46,7 +46,7 @@ let checkWeather = function(){
   if(currentWeather != weatherString){
     currentWeather = weatherString;
     document.getElementById("weather-name").innerHTML = weatherString + " in 3mins";
-    if(weatherString == "fog" || weatherString == "blizzards" || weatherString == "thunder"){
+    if(weatherString == "fog" || weatherString == "blizzards"){
       document.getElementById("audio").play();
     }
   }
