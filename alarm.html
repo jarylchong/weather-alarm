@@ -1,0 +1,60 @@
+<div id="weather-name" style="text-align:center;width:100%;font-size:72px;">
+</div>
+<audio controls id="audio">
+  <source src="alarm.mp3" type="audio/mp3">
+</audio>
+<script>
+let weatherRates = {
+    eurekaPagos: function(e) {
+        return e < 10 ? "fairSkies" : e < 28 ? "fog" : e < 46 ? "heatWaves" : e < 64 ? "snow" : e < 82 ? "thunder" : "blizzards"
+    },
+    eurekaPyros: function(e) {
+        return e < 10 ? "fairSkies" : e < 28 ? "heatWaves" : e < 46 ? "thunder" : e < 64 ? "blizzards" : e < 82 ? "umbralWind" : "snow"
+    }
+}
+
+let calculateForecastTarget = function(lDate) { 
+    // Thanks to Rogueadyn's SaintCoinach library for this calculation.
+    // lDate is the current local time.
+
+    var unixSeconds = parseInt(lDate.getTime() / 1000);
+    // Get Eorzea hour for weather start
+    var bell = unixSeconds / 175;
+
+    // Do the magic 'cause for calculations 16:00 is 0, 00:00 is 8 and 08:00 is 16
+    var increment = (bell + 8 - (bell % 8)) % 24;
+
+    // Take Eorzea days since unix epoch
+    var totalDays = unixSeconds / 4200;
+    totalDays = (totalDays << 32) >>> 0; // Convert to uint
+
+    // 0x64 = 100
+    var calcBase = totalDays * 100 + increment;
+
+    // 0xB = 11
+    var step1 = ((calcBase << 11) ^ calcBase) >>> 0;
+    var step2 = ((step1 >>> 8) ^ step1) >>> 0;
+
+    // 0x64 = 100
+    return step2 % 100;
+}
+let currentWeather = "";
+
+let checkWeather = function(){
+  let threeMinsFromNow = new Date(new Date().getTime() + (1000 * 60 * 3))
+  let weatherString = weatherRates.eurekaPagos(calculateForecastTarget(threeMinsFromNow))
+  if(currentWeather != weatherString){
+    currentWeather = weatherString;
+    document.getElementById("weather-name").innerHTML = weatherString + " in 3mins";
+    if(weatherString == "fog" || weatherString == "blizzards" || weatherString == "snow"){
+      document.getElementById("audio").play();
+    }
+  }
+}
+
+checkWeather();
+
+setInterval(() => {
+  checkWeather();
+}, 60*1000)
+</script>
